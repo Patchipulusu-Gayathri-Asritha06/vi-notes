@@ -11,16 +11,15 @@ const app = express();
 
 const PORT = process.env.PORT || 5000;
 
-// Allow all origins — works for both local and production
-app.use(cors({
+const corsOptions = {
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: false,
-}));
+};
 
-// Handle preflight requests
-app.options('*', cors());
+// Apply CORS middleware globally — handles preflight automatically
+app.use(cors(corsOptions));
 
 app.use(express.json({ limit: '10mb' }));
 
