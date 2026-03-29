@@ -15,9 +15,14 @@ interface PasteEvent {
   textLength: number;
   wordCount: number;
   cursorPosition: number;
-  pastedText: string; 
+  pastedText: string; // kept client-side only for existence checking
 }
 
+/**
+ * Checks whether pasted text still exists ANYWHERE in the document.
+ * We search the entire content, not just near the original cursor,
+ * because typing after the paste shifts its position rightward.
+ */
 function pasteStillExists(evt: PasteEvent, currentContent: string): boolean {
   if (!evt.pastedText || evt.pastedText.length === 0) return false;
   return currentContent.includes(evt.pastedText);
@@ -95,6 +100,7 @@ const EditorPage: React.FC = () => {
     load();
   }, [id, navigate]);
 
+  // ── PASTE DETECTION ──────────────────────────────────────────────
   const handlePaste = useCallback((e: React.ClipboardEvent<HTMLTextAreaElement>) => {
     const pastedText = e.clipboardData.getData('text');
     if (!pastedText.trim()) return;
@@ -204,6 +210,7 @@ const EditorPage: React.FC = () => {
   const wordCount = countWords(content);
   const charCount = content.length;
 
+  // Live badge: events with pastedText → check existence; events from backend → always count
   const activePasteEvents = pasteEvents.filter((evt) => {
     if (!evt.pastedText) return true;
     return pasteStillExists(evt, content);
